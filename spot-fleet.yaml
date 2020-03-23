@@ -1,0 +1,73 @@
+---
+Description: Launch an autoscaling spot fleet of Folding@Home instances
+Parameters:
+  UserName:
+    Type: String
+    Default: karlgutwin
+
+  Team:
+    Type: String
+    Default: '245750'
+
+  KeyPair:
+    Type: AWS::EC2::KeyPair::KeyName
+
+  SecurityGroups:
+    Type: List<AWS::EC2::SecurityGroup::Id>
+
+  Subnets:
+    Type: List<AWS::EC2::Subnet::Id>
+
+  NumInstances:
+    Type: Number
+    Default: 1
+
+Resources:
+  LaunchTemplate:
+    Type: AWS::EC2::LaunchTemplate
+    Properties:
+      LaunchTemplateData:
+        UserData:
+          Fn::Base64: !Sub |
+            #!/bin/sh
+            git clone https://github.com/kgutwin/folding-at-home
+            cd folding-at-home
+            ./client.sh '${UserName}' '${Team}'
+        InstanceMarketOptions:
+          MarketType: spot
+        SecurityGroupIds: !Ref SecurityGroups
+        KeyName: !Ref KeyPair
+        ImageId: ami-03d7bb62671766e1e
+        InstanceType: p2.xlarge
+  
+  SpotFleet:
+    Type: AWS::EC2::SpotFleet
+    Properties:
+      SpotFleetRequestConfigData:
+        AllocationStrategy: lowestPrice
+        ExcessCapacityTerminationPolicy: Default
+        IamFleetRole: !Sub "arn:aws:iam::${AWS::AccountId}:role/aws-ec2-spot-fleet-tagging-role"
+        InstanceInterruptionBehavior: terminate
+        LaunchTemplateConfigs:
+          - LaunchTemplateSpecification:
+              LaunchTemplateId: !Ref LaunchTemplate
+              Version: '1'
+            Overrides:
+              - SubnetId: !Select [0, !Ref Subnets]
+                InstanceType: g2.2xlarge
+                WeightedCapacity: 1.0
+              - SubnetId: !Select [1, !Ref Subnets]
+                InstanceType: g2.2xlarge
+                WeightedCapacity: 1.0
+              - SubnetId: !Select [2, !Ref Subnets]
+                InstanceType: g2.2xlarge
+                WeightedCapacity: 1.0
+              - SubnetId: !Select [3, !Ref Subnets]
+                InstanceType: g2.2xlarge
+                WeightedCapacity: 1.0
+        ReplaceUnhealthyInstances: false
+        SpotPrice: '0.2'
+        TargetCapacity: !Ref NumInstances
+        TerminateInstancesWithExpiration: true
+        Type: maintain
+        
