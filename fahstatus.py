@@ -359,9 +359,12 @@ def send_to_tsdb(options, units, uptime, nvidia):
     for k, v in errors.items():
         send_data.append(make_point('fah.error_' + k, v))
 
-    r = requests.post('http://opentsdb.fah.dyn.gutwin.org:4242/api/put?summary',
-                      json=send_data)
-    print r.status_code, r.text
+    try:
+        r = requests.post('http://opentsdb.fah.dyn.gutwin.org:4242/api/put?summary',
+                          json=send_data, timeout=1.1)
+        print r.status_code, r.text
+    except Exception, ex:
+        print ex
 
     
 if __name__ == '__main__':
