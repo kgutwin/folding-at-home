@@ -67,7 +67,7 @@ class Connection:
         self.init_commands = commands
 
         if self.is_connected():
-            map(self.queue_command, self.init_commands)
+            list(map(self.queue_command, self.init_commands))
 
 
     def get_status(self):
@@ -124,7 +124,7 @@ class Connection:
             raise Exception('Connection failed: ' + errno.errorcode[err])
 
         if self.password: self.queue_command('auth "%s"' % self.password)
-        map(self.queue_command, self.init_commands)
+        list(map(self.queue_command, self.init_commands))
 
 
     def close(self):
@@ -141,14 +141,14 @@ class Connection:
 
 
     def connection_lost(self):
-        print ('Connection lost')
+        print('Connection lost')
         self.close()
         self.fail_reason = 'closed'
         raise Exception('Lost connection')
 
 
     def connection_error(self, err, msg):
-        print ('Connection Error: %d: %s' % (err, msg))
+        print('Connection Error: %d: %s' % (err, msg))
         self.close()
         if err == errno.ECONNREFUSED: self.fail_reason = 'refused'
         elif err in [errno.ETIMEDOUT, errno.ENETDOWN, errno.ENETUNREACH]:
@@ -170,7 +170,8 @@ class Connection:
                     self.connection_lost()
                     return 0
 
-        except socket.error as (err, msg):
+        except socket.error as exc:
+            err, msg = exc.args
             # Error codes for nothing to read
             if err not in [errno.EAGAIN, errno.EWOULDBLOCK, WSAEWOULDBLOCK]:
                 if bytesRead: return bytesRead
@@ -195,7 +196,8 @@ class Connection:
                     self.connection_lost()
                     return 0
 
-        except socket.error as (err, msg):
+        except socket.error as exc:
+            err, msg = exc.args
             # Error codes for write buffer full
             if err not in [errno.EAGAIN, errno.EWOULDBLOCK, WSAEWOULDBLOCK]:
                 if bytesWritten: return bytesWritten
@@ -206,7 +208,7 @@ class Connection:
 
 
     def queue_command(self, command):
-        if debug: print ('command: ' + command)
+        if debug: print('command: ' + command)
         self.writeBuf += command + '\n'
 
 
@@ -217,8 +219,8 @@ class Connection:
             self.messages.append((version, type, msg))
             self.last_message = time.time()
         except Exception as e:
-            print ('ERROR parsing PyON message: %s: %s'
-                   % (str(e), data.encode('string_escape')))
+            print('ERROR parsing PyON message: %s: %s'
+                  % (str(e), data.encode('string_escape')))
 
 
     def parse(self):
@@ -272,12 +274,12 @@ class Connection:
                 else: raise
 
         except Exception as e:
-            print ('ERROR on connection to %s:%d: %s' % (self.address, self.port, e))
+            print('ERROR on connection to %s:%d: %s' % (self.address, self.port, e))
 
         # Timeout connection
         if self.connected and self.last_message and \
                 self.last_message + 10 < time.time():
-            print ('Connection timed out')
+            print('Connection timed out')
             self.close()
 
 # ('PyON 1 units:\n', [
@@ -473,8 +475,8 @@ def send_to_tsdb(options, units, uptime, nvidia):
             json=send_data,
             timeout=1.1
         )
-        print r.status_code, r.text
-    except Exception, ex:
+        print(r.status_code, r.text)
+    except Exception as ex:
         pass
 
 def send_to_influx(options, units, uptime, nvidia):
@@ -498,8 +500,9 @@ def send_to_influx(options, units, uptime, nvidia):
             "428f46220296e2f7",
             data
         )
-    except Exception, ex:
-        print str(ex)
+        print('wrote to influxdb')
+    except Exception as ex:
+        print(str(ex))
     
 if __name__ == '__main__':
     init = [
@@ -521,11 +524,11 @@ if __name__ == '__main__':
             else:
                 uptime = get_uptime()
                 nvidia = get_nvidia()
-                print '\033[2J\033[1;1H'
-                print uptime['raw'].strip()
-                print ' '.join('%s:%s' % i for i in nvidia.items())
+                print('\033[2J\033[1;1H')
+                print(uptime['raw'].strip())
+                print(' '.join('%s:%s' % i for i in nvidia.items()))
                 for i in data:
-                    print 'slot', i['slot'], i['state'], 'project', i['project'], i['percentdone'], 'eta', i['eta'], 'tpf', i['tpf']
+                    print('slot', i['slot'], i['state'], 'project', i['project'], i['percentdone'], 'eta', i['eta'], 'tpf', i['tpf'])
                 print
                 send_to_influx(
                     options=options,

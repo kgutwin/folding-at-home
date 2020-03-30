@@ -11,5 +11,5 @@ cat > /etc/fahclient/config.xml <<EOF
 EOF
 service FAHClient restart
 
-python2 -m pip install influxdb-client && screen -d -m python2 fahstatus.py
+pip3 install influxdb-client && screen -d -m python3 fahstatus.py
 
