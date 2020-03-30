@@ -64,6 +64,9 @@ Resources:
           Cpu: 256
           PortMappings:
             - ContainerPort: 3000
+          Environment:
+            - Name: GF_INSTALL_PLUGINS
+              Value: grafana-influxdb-flux-datasource
           LogConfiguration:
             LogDriver: awslogs
             Options:
@@ -86,41 +89,41 @@ Resources:
           SecurityGroups:
             - !Ref SecurityGroup
 
-  OpenTSDBTaskDefinition: 
-    Type: AWS::ECS::TaskDefinition
-    Properties:
-      Family: opentsdb-fargate-demo
-      RequiresCompatibilities:
-        - FARGATE
-      NetworkMode: awsvpc
-      ExecutionRoleArn: !Sub arn:aws:iam::${AWS::AccountId}:role/ecsTaskExecutionRole
-      Memory: '512'
-      Cpu: '256'
-      ContainerDefinitions:
-        - Name: opentsdb-container
-          Image: petergrace/opentsdb-docker
-          Memory: 512
-          Cpu: 256
-          PortMappings:
-            - ContainerPort: 4242
-          LogConfiguration:
-            LogDriver: awslogs
-            Options:
-                awslogs-group: "/ecs/grafana-fargate"
-                awslogs-region: !Ref AWS::Region
-                awslogs-stream-prefix: "dashboard"
-
-  OpenTSDBServiceDefinition:
-    Type: AWS::ECS::Service
-    Properties:
-      LaunchType: FARGATE
-      TaskDefinition: !Ref OpenTSDBTaskDefinition
-      Cluster: !Ref ECSCluster
-      ServiceName: opentsdb-dashboard-service
-      DesiredCount: 1
-      NetworkConfiguration:
-        AwsvpcConfiguration:
-          AssignPublicIp: ENABLED
-          Subnets: !Ref Subnets
-          SecurityGroups:
-            - !Ref SecurityGroup
+#  OpenTSDBTaskDefinition: 
+#    Type: AWS::ECS::TaskDefinition
+#    Properties:
+#      Family: opentsdb-fargate-demo
+#      RequiresCompatibilities:
+#        - FARGATE
+#      NetworkMode: awsvpc
+#      ExecutionRoleArn: !Sub arn:aws:iam::${AWS::AccountId}:role/ecsTaskExecutionRole
+#      Memory: '512'
+#      Cpu: '256'
+#      ContainerDefinitions:
+#        - Name: opentsdb-container
+#          Image: petergrace/opentsdb-docker
+#          Memory: 512
+#          Cpu: 256
+#          PortMappings:
+#            - ContainerPort: 4242
+#          LogConfiguration:
+#            LogDriver: awslogs
+#            Options:
+#                awslogs-group: "/ecs/grafana-fargate"
+#                awslogs-region: !Ref AWS::Region
+#                awslogs-stream-prefix: "dashboard"
+#
+#  OpenTSDBServiceDefinition:
+#    Type: AWS::ECS::Service
+#    Properties:
+#      LaunchType: FARGATE
+#      TaskDefinition: !Ref OpenTSDBTaskDefinition
+#      Cluster: !Ref ECSCluster
+#      ServiceName: opentsdb-dashboard-service
+#      DesiredCount: 1
+#      NetworkConfiguration:
+#        AwsvpcConfiguration:
+#          AssignPublicIp: ENABLED
+#          Subnets: !Ref Subnets
+#          SecurityGroups:
+#            - !Ref SecurityGroup
