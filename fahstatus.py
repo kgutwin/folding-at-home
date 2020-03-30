@@ -497,7 +497,7 @@ def send_to_influx(options, units, uptime, nvidia):
             'measurement': pt['metric'].split('.')[0],
             'tags': pt['tags'],
             'fields': {pt['metric'].split('.', 1)[1]: pt['value']},
-            'time': datetime.datetime.now()
+            'time': datetime.datetime.utcnow()
         })
         for pt in metric_data
     ]
