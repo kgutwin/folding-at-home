@@ -269,6 +269,94 @@ class Connection:
             self.close()
 
 # ('PyON 1 units:\n', [
+#     {
+#         'timeremaining': '7.77 days',
+#         'ppd': '21844',
+#         'assigned': '2020-03-24T03:37:18Z',
+#         'attempts': 0,
+#         'deadline': '2020-04-01T08:25:17Z',
+#         'cs': '155.247.166.220',
+#         'id': '02',
+#         'unit': '0x0000000880fccb0a5e6fb579e154aff9',
+#         'slot': '01',
+#         'state': 'RUNNING',
+#         'creditestimate': '9405',
+#         'core': '0x22',
+#         'run': 0,
+#         'nextattempt': '0.00 secs',
+#         'clone': 5038,
+#         'error': 'NO_ERROR',
+#         'totalframes': 100,
+#         'ws': '128.252.203.10',
+#         'framesdone': 99,
+#         'gen': 1,
+#         'tpf': '6 mins 12 secs',
+#         'percentdone': '99.38%',
+#         'basecredit': '9405',
+#         'project': 11761,
+#         'eta': '3 mins 49 secs',
+#         'timeout': '2020-03-25T03:37:18Z',
+#         'waitingon': ''
+#     }, {
+#         'timeremaining': 'unknown time',
+#         'ppd': '0',
+#         'assigned': '<invalid>',
+#         'attempts': 12,
+#         'deadline': '<invalid>',
+#         'cs': '0.0.0.0',
+#         'id': '01',
+#         'unit': '0x00000000000000000000000000000000',
+#         'slot': '00',
+#         'state': 'DOWNLOAD',
+#         'creditestimate': '0',
+#         'core': 'unknown',
+#         'run': 0,
+#         'nextattempt': '1 hours 26 mins',
+#         'clone': 0,
+#         'error': 'NO_ERROR',
+#         'totalframes': 0,
+#         'ws': '40.114.52.201',
+#         'framesdone': 0,
+#         'gen': 0,
+#         'tpf': '0.00 secs',
+#         'percentdone': '0.00%',
+#         'basecredit': '0',
+#         'project': 0,
+#         'eta': '0.00 secs',
+#         'timeout': '<invalid>',
+#         'waitingon': 'WS Assignment'
+#     }, {
+#         'timeremaining': '8.20 days',
+#         'ppd': '9405',
+#         'assigned': '2020-03-24T13:53:48Z',
+#         'attempts': 0,
+#         'deadline': '2020-04-01T18:41:47Z',
+#         'cs': '155.247.166.220',
+#         'id': '00',
+#         'unit': '0x0000001080fccb0a5e6d7d103fda2892',
+#         'slot': '01',
+#         'state': 'READY',
+#         'creditestimate': '9405',
+#         'core': '0x22',
+#         'run': 0,
+#         'nextattempt': '0.00 secs',
+#         'clone': 4845,
+#         'error': 'NO_ERROR',
+#         'totalframes': 0,
+#         'ws': '128.252.203.10',
+#         'framesdone': 0,
+#         'gen': 8,
+#         'tpf': '14 mins 24 secs',
+#         'percentdone': '0.00%',
+#         'basecredit': '9405',
+#         'project': 11760,
+#         'eta': '24 hours 00 mins',
+#         'timeout': '2020-03-25T13:53:48Z',
+#         'waitingon': ''
+#     }
+# ])
+            
+# ('PyON 1 units:\n', [
 #  {
 #   'timeremaining': '5.30 days',
 #   'ppd': '1810',
@@ -396,12 +484,12 @@ if __name__ == '__main__':
                 for i in data:
                     print 'slot', i['slot'], i['state'], 'project', i['project'], i['percentdone'], 'eta', i['eta'], 'tpf', i['tpf']
                 print
-                send_to_tsdb(
-                    options=options,
-                    units=data,
-                    uptime=uptime,
-                    nvidia=nvidia
-                )
+                #send_to_tsdb(
+                #    options=options,
+                #    units=data,
+                #    uptime=uptime,
+                #    nvidia=nvidia
+                #)
                 
         conn.messages = []
 
