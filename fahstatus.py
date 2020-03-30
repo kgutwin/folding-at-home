@@ -41,7 +41,7 @@ try:
     from influxdb_client.client.write.point import Point
     influx = influxdb_client.InfluxDBClient(
         url="https://us-west-2-1.aws.cloud2.influxdata.com",
-        token="kD5sjnSVMcA8otuswBogU9bedqZ8KgQ6E3nYAVEAzRVUBXfQehd-GngMEsBsmrGhDafknaaYfL7cNIm561GzkQ==",
+        token="ezAOFBjew9SgGJ-UEBDWzzI6EPrLeIyKv8ZRQzp4iIfQUqIS_1f1f10Dbk8v5R0HZKKZfr1R1HHGuj1HMuMNjA==",
         org="428f46220296e2f7"
     )
     influx_writer = influx.write_api()
@@ -500,7 +500,7 @@ def send_to_influx(options, units, uptime, nvidia):
     try:
         influx_writer.write(
             bucket="fah",
-            data
+            record=data
         )
         print('wrote to influxdb')
     except Exception as ex:
