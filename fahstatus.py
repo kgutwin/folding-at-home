@@ -449,23 +449,28 @@ def get_metric_data(options, units, uptime, nvidia):
             make_point('sys.gpu.utilization',
                        float(nvidia[' utilization.gpu [%]'].strip(' %')))
         ])
+    projects = {}
     states = {}
     errors = {}
     for slot in units:
         states[slot['state'].lower()] = states.get(slot['state'].lower(), 0) + 1
         errors[slot['error'].lower()] = errors.get(slot['error'].lower(), 0) + 1
+        projects[slot['project']] = projects.get(slot['project'], 0) + 1
         if slot['percentdone'] != '0.00%':
             send_data.extend([
-                make_point('fah.project', slot['project'],
-                           slot=int(slot['slot'])),
                 make_point('fah.complete',
                            float(slot['percentdone'].strip('%')),
-                           slot=int(slot['slot']))
+                           slot=int(slot['slot'])),
+                make_point('fah.creditestimate',
+                           int(slot['creditestimate']),
+                           slot=int(slot['slot'])),
             ])
     for k, v in states.items():
-        send_data.append(make_point('fah.num_' + k, v))
+        send_data.append(make_point('fah.state', v, state=k))
     for k, v in errors.items():
-        send_data.append(make_point('fah.error_' + k, v))
+        send_data.append(make_point('fah.error', v, error=k))
+    for k, v in projects.items():
+        send_data.append(make_point('fah.projects', v, project=k))
 
     return send_data
 
