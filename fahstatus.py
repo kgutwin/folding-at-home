@@ -403,7 +403,7 @@ class Connection:
 #  }, {'timeremaining': '8.17 days', 'ppd': '64574', 'assigned': '2020-03-18T15:04:31Z', 'attempts': 0, 'deadline': '2020-03-26T19:52:30Z', 'cs': '128.252.203.4', 'id': '01', 'unit': '0x000000078ca304e75e6bac2c2c8fe44f', 'slot': '01', 'state': 'RUNNING', 'creditestimate': '15396', 'core': '0x22', 'run': 0, 'nextattempt': '0.00 secs', 'clone': 7323, 'error': 'NO_ERROR', 'totalframes': 100, 'ws': '140.163.4.231', 'framesdone': 13, 'gen': 3, 'tpf': '3 mins 26 secs', 'percentdone': '13.54%', 'basecredit': '15396', 'project': 11747, 'eta': '4 hours 56 mins', 'timeout': '2020-03-19T15:04:31Z', 'waitingon': ''}])
 
 def get_uptime():
-    o = subprocess.check_output('uptime', shell=True)
+    o = subprocess.check_output('uptime', shell=True).decode('utf-8')
     m = re.search("([0-9.]+)[^0-9]+([0-9.]+)[^0-9]+([0-9.]+)$", o)
     return {'raw': o, 'data': [float(v) for v in m.groups()]}
 
@@ -414,7 +414,7 @@ def get_nvidia():
              ' --query-gpu=temperature.gpu,utilization.gpu,utilization.memory'
              ' --format=csv'),
             shell=True
-        )
+        ).decode('utf-8')
         d = dict(zip(*[i.split(',') for i in o.splitlines()]))
         return d
     except subprocess.CalledProcessError:
