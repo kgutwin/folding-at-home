@@ -24,6 +24,7 @@ import socket
 import select
 import errno
 import time
+import datetime
 import sys
 import traceback
 import requests
@@ -34,6 +35,17 @@ from collections import OrderedDict
 if sys.platform == 'win32':
     from ctypes import windll
     WSAGetLastError = windll.ws2_32.WSAGetLastError
+
+try:
+    import influxdb_client
+    influx = influxdb_client.InfluxDBClient(
+        url="https://us-west-2-1.aws.cloud2.influxdata.com",
+        token="kD5sjnSVMcA8otuswBogU9bedqZ8KgQ6E3nYAVEAzRVUBXfQehd-GngMEsBsmrGhDafknaaYfL7cNIm561GzkQ=="
+    )
+    influx_writer = influx.write_api()
+    
+except ImportError:
+    influx = influx_writer = None
 
 debug = False
 WSAEWOULDBLOCK = 10035
@@ -405,7 +417,7 @@ def get_nvidia():
     except subprocess.CalledProcessError:
         return {}
 
-def send_to_tsdb(options, units, uptime, nvidia):
+def get_metric_data(options, units, uptime, nvidia):
     def make_point(m, v, **kw):
         tags = {
             'host': socket.gethostname(),
@@ -437,16 +449,24 @@ def send_to_tsdb(options, units, uptime, nvidia):
     for slot in units:
         states[slot['state'].lower()] = states.get(slot['state'].lower(), 0) + 1
         errors[slot['error'].lower()] = errors.get(slot['error'].lower(), 0) + 1
-        send_data.extend([
-            make_point('fah.project', slot['project'], slot=int(slot['slot'])),
-            make_point('fah.complete', float(slot['percentdone'].strip('%')),
-                       slot=int(slot['slot']))
-        ])
+        if slot['percentdone'] != '0.00%':
+            send_data.extend([
+                make_point('fah.project', slot['project'],
+                           slot=int(slot['slot'])),
+                make_point('fah.complete',
+                           float(slot['percentdone'].strip('%')),
+                           slot=int(slot['slot']))
+            ])
     for k, v in states.items():
         send_data.append(make_point('fah.num_' + k, v))
     for k, v in errors.items():
         send_data.append(make_point('fah.error_' + k, v))
 
+    return send_data
+
+def send_to_tsdb(options, units, uptime, nvidia):
+    send_data = get_metric_data(options, units, uptime, nvidia)
+        
     try:
         r = requests.post(
             'http://opentsdb.fah.dyn.gutwin.org:4242/api/put?summary',
@@ -457,6 +477,29 @@ def send_to_tsdb(options, units, uptime, nvidia):
     except Exception, ex:
         pass
 
+def send_to_influx(options, units, uptime, nvidia):
+    if influx is None:
+        return
+
+    metric_data = get_metric_data(options, units, uptime, nvidia)
+    data = [
+        Point.from_dict({
+            'measurement': pt['metric'].split('.')[0],
+            'tags': pt['tags'],
+            'fields': {pt['metric'].split('.', 1)[1]: pt['value']},
+            'time': datetime.datetime.now()
+        })
+        for pt in metric_data
+    ]
+    
+    try:
+        influx_writer.write(
+            "fah",
+            "428f46220296e2f7",
+            data
+        )
+    except Exception, ex:
+        print str(ex)
     
 if __name__ == '__main__':
     init = [
@@ -484,12 +527,12 @@ if __name__ == '__main__':
                 for i in data:
                     print 'slot', i['slot'], i['state'], 'project', i['project'], i['percentdone'], 'eta', i['eta'], 'tpf', i['tpf']
                 print
-                #send_to_tsdb(
-                #    options=options,
-                #    units=data,
-                #    uptime=uptime,
-                #    nvidia=nvidia
-                #)
+                send_to_influx(
+                    options=options,
+                    units=data,
+                    uptime=uptime,
+                    nvidia=nvidia
+                )
                 
         conn.messages = []
 
