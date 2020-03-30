@@ -38,6 +38,7 @@ if sys.platform == 'win32':
 
 try:
     import influxdb_client
+    from influxdb_client.client.write.point import Point
     influx = influxdb_client.InfluxDBClient(
         url="https://us-west-2-1.aws.cloud2.influxdata.com",
         token="kD5sjnSVMcA8otuswBogU9bedqZ8KgQ6E3nYAVEAzRVUBXfQehd-GngMEsBsmrGhDafknaaYfL7cNIm561GzkQ=="
